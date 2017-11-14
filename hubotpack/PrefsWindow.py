@@ -71,42 +71,41 @@ class PrefsWindow:
 		
 	# ------ Onglet "Compte" ------
 	def afficheInfos (self):
-			account = self.hubicAccountObj.Get('com.hubic.account', 'Account', dbus_interface='org.freedesktop.DBus.Properties')
+		account = self.hubicAccountObj.Get('com.hubic.account', 'Account', dbus_interface='org.freedesktop.DBus.Properties')
 
-			connect = account != ''
+		connect = account != ''
 
-			if connect:
-				print ("[Compte : {}]".format (account))
-				self.label_compte_actuel.set_label (account)
+		if connect:
+			print ("[Compte : {}]".format (account))
+			self.label_compte_actuel.set_label (account)
 
-				usedBytes = str (convert_size (self.hubicAccountObj.Get('com.hubic.account', 'UsedBytes')))
-				totalBytes = str (convert_size (self.hubicAccountObj.Get('com.hubic.account', 'TotalBytes')))
-				usage = "{} sur {}".format (usedBytes, totalBytes)
-				print ("[Usage : {}]".format (usage))
-				self.label_statut.set_label(usage)
+			usedBytes = str (convert_size (self.hubicAccountObj.Get('com.hubic.account', 'UsedBytes')))
+			totalBytes = str (convert_size (self.hubicAccountObj.Get('com.hubic.account', 'TotalBytes')))
+			usage = "{} sur {}".format (usedBytes, totalBytes)
+			print ("[Usage : {}]".format (usage))
+			self.label_statut.set_label(usage)
 
-				synchronizedDir = self.hubicAccountObj.Get('com.hubic.account', 'SynchronizedDir')
+			synchronizedDir = self.hubicAccountObj.Get('com.hubic.account', 'SynchronizedDir')
+			# synchronizedDir = self.hubicAccountObj.Get('com.hubic.account', 'SynchronizedDir', dbus_interface='org.freedesktop.DBus.Properties')
 
-				# synchronizedDir = self.hubicAccountObj.Get('com.hubic.account', 'SynchronizedDir', dbus_interface='org.freedesktop.DBus.Properties')
-
-				if synchronizedDir == '':
-					synchronizedDir = HOMEDIR
-					self.switch_synchro.set_state(False)
-				else:
-					self.switch_synchro.set_state(True)
-					print ("[Synchronized directory : {}]".format (synchronizedDir))
-
-				self.filechooserbutton_emplacement.set_filename (synchronizedDir)
-
+			if synchronizedDir == '':
+				synchronizedDir = HOMEDIR
+				self.switch_synchro.set_state(False)
 			else:
-				print ("[Déconnecté]")
-				s = 'Déconnecté'
-				self.label_compte_actuel.set_label (s)
-				self.label_statut.set_label('')
-				s = HOMEDIR
-				self.filechooserbutton_emplacement.set_filename (s)
+				self.switch_synchro.set_state(True)
+				print ("[Synchronized directory : {}]".format (synchronizedDir))
 
-			self.frame_synchro.set_sensitive(connect)
+			self.filechooserbutton_emplacement.set_filename (synchronizedDir)
+
+		else:
+			print ("[Déconnecté]")
+			s = 'Déconnecté'
+			self.label_compte_actuel.set_label (s)
+			self.label_statut.set_label('')
+			s = HOMEDIR
+			self.filechooserbutton_emplacement.set_filename (s)
+
+		self.frame_synchro.set_sensitive(connect)
 
 
 	def on_button_login_clicked (self, button):
