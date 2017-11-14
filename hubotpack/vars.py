@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import os
 from pathlib import Path
+import dbus
+from dbus.mainloop.glib import DBusGMainLoop
+
 
 APPINDICATOR_ID = 'hubot-indicator'
 
@@ -14,4 +17,6 @@ HOMEDIR = str(Path.home())
 APPDIR = os.path.join (HOMEDIR, '.config', 'hubot-indicator')
 if not os.path.exists (APPDIR): os.mkdir (APPDIR)
 
-
+BUSNAME = 'com.hubiC'
+DBusGMainLoop(set_as_default=True)
+SESSION_BUS = dbus.SessionBus()

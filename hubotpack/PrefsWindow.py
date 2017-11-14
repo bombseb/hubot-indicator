@@ -4,106 +4,57 @@ import gi
 import pickle
 from .SelectDirs import *
 from .LoginWindow import *
+from .Sauvegarde import *
 from .functions import *
+from .HubicBackup import *
 from .vars import *
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk as gtk
-
+import dbus
 
 class PrefsWindow:
 	def __init__(self):
-			builder = gtk.Builder()
-			builder.add_from_file(os.path.join ('gui', 'prefs.glade'))  # Rentrez évidemment votre fichier, pas le miens!
+		builder = gtk.Builder()
+		builder.add_from_file(os.path.join ('gui', 'prefs.glade'))  # Rentrez évidemment votre fichier, pas le miens!
 
-			self.modifiedList = []
+		self.modifiedList = []
 
-			for o in builder.get_objects():
-				if issubclass(type(o), gtk.Buildable):
-					name = gtk.Buildable.get_name(o)
-					setattr(self, name, o)
-				else:
-					print ("WARNING: can not get name for '{}'".format (o))
+		for o in builder.get_objects():
+			if issubclass(type(o), gtk.Buildable):
+				name = gtk.Buildable.get_name(o)
+				setattr(self, name, o)
 
-			self.sauvegardeLoaded = False
+		self.sauvegardeLoaded = False
 
-			self.excludeList = os.popen("hubic exclude list").readlines ()
-			self.excludeList = [x.rstrip ('\n') for x in self.excludeList]	# On supprime le retour chariot à la fin de chaque entrée de la liste
+		self.hubicAccountObj = SESSION_BUS.get_object(BUSNAME, '/com/hubic/Account')
+		self.hubicSettingsObj = SESSION_BUS.get_object(BUSNAME, '/com/hubic/Settings')
+		# self.hubicAccountIFace = dbus.Interface(self.hubicAccountObj, 'com.hubic.account')
+		# self.hubicAccountIFace2 = dbus.Interface(self.hubicAccountObj, dbus_interface='org.freedesktop.DBus.Properties')
 
-			self.proxyInfoFile = os.path.join(APPDIR, 'proxy')
+		self.excludeList = self.hubicAccountObj.Get('com.hubic.account', 'ExcludedFolders')
+		self.proxyInfoFile = os.path.join(APPDIR, 'proxy')
 
-			builder.connect_signals (self)
+		builder.connect_signals (self)
 
-			# Chargement des infos de connexion au proxy :
-			try:
-				with open(self.proxyInfoFile, 'rb') as fichier:
-					mon_depickler = pickle.Unpickler(fichier)
-					self.switch_proxy.set_state (mon_depickler.load())
-					self.entry_hote.set_text (mon_depickler.load())
-					self.entry_port.set_text (mon_depickler.load())
-					self.switch_proxy_auth.set_state (mon_depickler.load())
-					self.entry_proxy_user.set_text (mon_depickler.load())
-					self.entry_proxy_passwd.set_text (mon_depickler.load())
-			except FileNotFoundError:
-				pass
+		# Chargement des infos de connexion au proxy :
+		try:
+			with open(self.proxyInfoFile, 'rb') as fichier:
+				mon_depickler = pickle.Unpickler(fichier)
+				self.switch_proxy.set_state (mon_depickler.load())
+				self.entry_hote.set_text (mon_depickler.load())
+				self.entry_port.set_text (mon_depickler.load())
+				self.switch_proxy_auth.set_state (mon_depickler.load())
+				self.entry_proxy_user.set_text (mon_depickler.load())
+				self.entry_proxy_passwd.set_text (mon_depickler.load())
+		except FileNotFoundError:
+			pass
 
-			self.modifiedList.clear ()
-			self.afficheInfos()
-			self.window_prefs.show_all()
-			#self.window.present ()
-			#self.window.set_keep_above (True)
+		self.modifiedList.clear ()
+		self.afficheInfos()
+		self.window_prefs.show_all()
+		#self.window.present ()
+		#self.window.set_keep_above (True)
 
-	def on_button_sauvegarde_modif_clicked (self, button):
-		treeselection = self.treeview_sauvegardes.get_selection()
-		(model, iterSelection) = treeselection.get_selected()
-
-		child = self.treestore_sauvegardes.get_value (iterSelection, 5)
-		if child:
-			name = self.treestore_sauvegardes.get_value (iterSelection, 1)
-			print (name)
-
-	def on_treeview_sauvegardes_row_activated (self, treeview, path, column):
-		self.on_button_sauvegarde_modif_clicked (None)
-
-	def on_notebook_prefs_switch_page (self, notebook, page, page_num):
-
-		if page_num == 2 and not self.sauvegardeLoaded:
-			self._set_busy_cursor(True)
-			GObject.idle_add(self.afficheSauvegardes)
-
-
-
-	def afficheSauvegardes (self):
-		iterCetOrdi 	= self.treestore_sauvegardes.append(None, [True, "Cet ordinateur", "", "", "0", False])
-		iterAutreOrdi 	= self.treestore_sauvegardes.append(None, [False, "Autres ordinateurs", "", "", "0", False])
-
-		res = os.popen("hubic backup info").readlines()
-		res = [x.rstrip ('\n') for x in res]
-
-		header = ['Name','Attached','Local path','Last backup','Size']
-		headerPos = {}
-		pos = 0
-		for e in header:
-			length = res[0].find (e) + len (e) - pos
-			headerPos[e] = (pos, length)
-			pos += length
-
-		test = []
-		for i, ligne in enumerate (res):
-			if i == 0 : continue
-			name = ligne[headerPos['Name'][0]:headerPos['Name'][0] + headerPos['Name'][1]].strip ()
-			attached = ligne[headerPos['Attached'][0]:headerPos['Attached'][0] + headerPos['Attached'][1]].strip () == 'Yes'
-			localPath = ligne[headerPos['Local path'][0]:headerPos['Local path'][0] + headerPos['Local path'][1]].strip ()
-			lastBackup = ligne[headerPos['Last backup'][0]:headerPos['Last backup'][0] + headerPos['Last backup'][1]].strip ()
-			size = ligne[headerPos['Size'][0]:headerPos['Size'][0] + headerPos['Size'][1]].strip ()
-
-			if attached:
-				self.treestore_sauvegardes.append(iterCetOrdi, [attached, name, localPath, lastBackup, size, True])
-			else:
-				self.treestore_sauvegardes.append(iterAutreOrdi, [attached, name, localPath, lastBackup, size, True])
-
-		self.treeview_sauvegardes.expand_all ()
-		self.sauvegardeLoaded = True
-		self._set_busy_cursor (False)
 
 
 	def _set_busy_cursor(self, busy):
@@ -120,31 +71,32 @@ class PrefsWindow:
 		
 	# ------ Onglet "Compte" ------
 	def afficheInfos (self):
-			res = os.popen("hubic status").readlines()
+			account = self.hubicAccountObj.Get('com.hubic.account', 'Account', dbus_interface='org.freedesktop.DBus.Properties')
 
-			connect = res[3].startswith ('Account: ')
+			connect = account != ''
 
 			if connect:
-				s = res[3].replace ("Account: ", "")
-				s = s.rstrip ('\n')
-				print ("[Compte : {}]".format (s))
-				self.label_compte_actuel.set_label (s)
+				print ("[Compte : {}]".format (account))
+				self.label_compte_actuel.set_label (account)
 
-				s = res[5].replace ("Usage: ", "")
-				s = s.rstrip ('\n')
-				print ("[Usage : {}]".format (s))
-				self.label_statut.set_label(s)
+				usedBytes = str (convert_size (self.hubicAccountObj.Get('com.hubic.account', 'UsedBytes')))
+				totalBytes = str (convert_size (self.hubicAccountObj.Get('com.hubic.account', 'TotalBytes')))
+				usage = "{} sur {}".format (usedBytes, totalBytes)
+				print ("[Usage : {}]".format (usage))
+				self.label_statut.set_label(usage)
 
-				s = res[4].replace ("Synchronized directory: ", "")
-				s = s.rstrip ('\n')
-				if s == '' or not res[4].startswith ('Synchronized directory: ') :
-					s = HOMEDIR
+				synchronizedDir = self.hubicAccountObj.Get('com.hubic.account', 'SynchronizedDir')
+
+				# synchronizedDir = self.hubicAccountObj.Get('com.hubic.account', 'SynchronizedDir', dbus_interface='org.freedesktop.DBus.Properties')
+
+				if synchronizedDir == '':
+					synchronizedDir = HOMEDIR
 					self.switch_synchro.set_state(False)
 				else:
 					self.switch_synchro.set_state(True)
-					print ("[Synchronized directory : {}]".format (s))
+					print ("[Synchronized directory : {}]".format (synchronizedDir))
 
-				self.filechooserbutton_emplacement.set_filename (s)
+				self.filechooserbutton_emplacement.set_filename (synchronizedDir)
 
 			else:
 				print ("[Déconnecté]")
@@ -161,7 +113,7 @@ class PrefsWindow:
 		LoginWindow(self.afficheInfos)
 
 	def on_button_logout_clicked (self, button):
-		os.system ('hubic logout')
+		self.hubicAccountObj.Logout (dbus_interface='com.hubic.account')
 		self.afficheInfos ()
 
 		self.switch_synchro.set_state (False)
@@ -222,29 +174,77 @@ class PrefsWindow:
 		self.modifiedList.append (self.entry_proxy_passwd)
 
 
+	# ------ Onglet Sauvegardes ------
+	def on_notebook_prefs_switch_page (self, notebook, page, page_num):
+		if page_num == 2 and not self.sauvegardeLoaded:
+			self._set_busy_cursor(True)
+			GObject.idle_add(self.afficheSauvegardes)
+
+	def afficheSauvegardes (self):	
+
+		iterCetOrdi 	= self.treestore_sauvegardes.append(None, [True, "Cet ordinateur", "", "", "0", False])
+		iterAutreOrdi 	= self.treestore_sauvegardes.append(None, [False, "Autres ordinateurs", "", "", "0", False])
+
+
+		res = os.popen("hubic backup info").readlines()
+		res = [x.rstrip ('\n') for x in res]
+
+		header = ['Name','Attached','Local path','Last backup','Size']
+		headerPos = {}
+		pos = 0
+		for e in header:
+			length = res[0].find (e) + len (e) - pos
+			headerPos[e] = (pos, length)
+			pos += length
+
+		test = []
+		for i, ligne in enumerate (res):
+			if i == 0 : continue
+			name = ligne[headerPos['Name'][0]:headerPos['Name'][0] + headerPos['Name'][1]].strip ().replace (' ', '_')
+			attached = ligne[headerPos['Attached'][0]:headerPos['Attached'][0] + headerPos['Attached'][1]].strip () == 'Yes'
+			localPath = ligne[headerPos['Local path'][0]:headerPos['Local path'][0] + headerPos['Local path'][1]].strip ()
+			lastBackup = ligne[headerPos['Last backup'][0]:headerPos['Last backup'][0] + headerPos['Last backup'][1]].strip ()
+			size = ligne[headerPos['Size'][0]:headerPos['Size'][0] + headerPos['Size'][1]].strip ()
+
+			if attached:
+				self.treestore_sauvegardes.append(iterCetOrdi, [attached, name, localPath, lastBackup, size, True])
+			else:
+				self.treestore_sauvegardes.append(iterAutreOrdi, [attached, name, localPath, lastBackup, size, True])
+
+		self.treeview_sauvegardes.expand_all ()
+		self.sauvegardeLoaded = True
+		self._set_busy_cursor (False)
+
+	def on_treeview_sauvegardes_row_activated (self, treeview, path, column):
+		self.on_button_sauvegarde_modif_clicked (None)
+
+	def on_button_sauvegarde_modif_clicked (self, button):
+		treeselection = self.treeview_sauvegardes.get_selection()
+		(model, iterSelection) = treeselection.get_selected()
+
+		child = self.treestore_sauvegardes.get_value (iterSelection, 5)
+		if child:
+			#name = self.treestore_sauvegardes.get_value (iterSelection, 1)
+			Sauvegarde (self, iterSelection)
+
 
 	# ------ Boutons Valider et Annuler ------
 	def on_button_valider_clicked (self, button):
 
+		cmd = ''
+
 		# Onglet "Compte"
 		if self.switch_synchro.get_state ():
 			if self.filechooserbutton_emplacement in self.modifiedList:
-				cmd = 'hubic syncdir {}'.format (self.filechooserbutton_emplacement.get_filename ())
-				print (cmd)
-				os.system (cmd)
+				synchroPath = self.filechooserbutton_emplacement.get_filename ()
+				# self.hubicAccountIFace2.Set('com.hubic.account', 'SynchronizedDir', synchroPath)
+				self.hubicAccountObj.Set ('com.hubic.account', 'SynchronizedDir', synchroPath, dbus_interface='org.freedesktop.DBus.Properties')
 
 			if self.excludeList in self.modifiedList:
-				cmd = 'hubic exclude clear'
-				print (cmd)
-				os.system (cmd)
-				for path in self.excludeList:
-					cmd = 'hubic exclude add {}'.format (path)
-					print (cmd)
-					os.system (cmd)
+				self.hubicAccountObj.Set ('com.hubic.account', 'ExcludedFolders', self.excludeList, dbus_interface='org.freedesktop.DBus.Properties')
 		else:
 			if self.switch_synchro in self.modifiedList:
-				cmd = 'hubic syncdir --none'
-				os.system (cmd)
+				self.hubicAccountObj.Set ('com.hubic.account', 'SynchronizedDir', '', dbus_interface='org.freedesktop.DBus.Properties')
 
 
 		# Onglet "Options avancées"
@@ -280,28 +280,18 @@ class PrefsWindow:
 
 			if self.entry_hote in self.modifiedList or self.entry_port in self.modifiedList or \
 				self.entry_proxy_user in self.modifiedList or self.entry_proxy_passwd in self.modifiedList \
-				or self.switch_proxy_auth in self.modifiedList:
-
-				proxy = "{} {}".format (proxy_hote, proxy_port)
-				user = ""
+				or self.switch_proxy_auth in self.modifiedList or self.switch_proxy in self.modifiedList:
 
 				if proxy_sw_auth:
 					if self.entry_proxy_user in self.modifiedList or self.entry_proxy_passwd in self.modifiedList \
 						or self.switch_proxy_auth in self.modifiedList:
-						hubicProxyPasswdFile = os.path.join (APPDIR, '.hubicproxypasswd')
-						os.system ('echo {} > {}'.format (proxy_passwd, hubicProxyPasswdFile))
-						user = "{} {}".format (proxy_user, hubicProxyPasswdFile)
-
-				cmd = 'hubic proxy set {} {}'.format (proxy, user)
+						self.hubicSettingsObj.SetAuthenticatedProxy (proxy_hote, int (proxy_port), proxy_user, proxy_passwd, dbus_interface='com.hubic.settings')
+				else:
+					self.hubicSettingsObj.SetProxy (proxy_hote, int (proxy_port), dbus_interface='com.hubic.settings')
 
 		else:
 			if self.switch_proxy in self.modifiedList:
-				cmd = 'hubic proxy unset'
-
-		print (cmd)
-
-		os.system (cmd)
-
+				self.hubicSettingsObj.UnsetProxy (dbus_interface='com.hubic.settings')
 
 		# Sauvegarde des objets dans un fichier de données :
 		with open(self.proxyInfoFile, 'wb') as fichier:
