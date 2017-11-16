@@ -12,10 +12,11 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk as gtk
 
 class PrefsWindow:
-	def __init__(self):
+	def __init__(self, appMenu):
 		builder = gtk.Builder()
 		builder.add_from_file(os.path.join ('gui', 'prefs.glade'))
 
+		self.appMenu = appMenu
 		self.modifiedList = []
 
 		for o in builder.get_objects():
@@ -351,6 +352,11 @@ class PrefsWindow:
 
 		self.window_prefs.close ()
 
-
 	def on_button_annuler_clicked (self, button):
 		self.window_prefs.close ()
+
+
+	def on_window_prefs_delete_event (self, widget, event):
+		del (self.appMenu.prefsWindow)
+
+

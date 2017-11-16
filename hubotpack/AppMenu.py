@@ -41,7 +41,11 @@ class AppMenu(gtk.Menu):
 		self.show_all()
 
 	def prefs(self, menuItem):
-		PrefsWindow ()
+
+		try:
+			self.prefsWindow.window_prefs.present ()
+		except AttributeError:
+			self.prefsWindow = PrefsWindow (self)
 
 	def pause(self, menuItem):
 		hubicAccount.setPauseState (True)
