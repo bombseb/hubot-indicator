@@ -8,43 +8,29 @@ class HubicBackup:
 		self.backupName = backupName
 
 		# Doc Hubic DBus : /usr/share/doc/hubic/dbusapi/index.html#gdbus-com.hubic.backup
-		self.backup = SESSION_BUS.get_object(BUSNAME, '/com/hubic/Backup/' + backupName)
+		self.backup = SESSION_BUS.get_object(BUSNAME, '/com/hubic/Backup/' + self.backupName)
 
-	def getName (self):
-		return self.backup.Get('com.hubic.backup', 'Name')
+	def delete (self):
+		self.backup.Delete ()
 
-	def getOwned (self):
-		return self.backup.Get('com.hubic.backup', 'Owned')
+	def backupNow (self):
+		self.backup.BackupNow ()
 
-	def getLastBackup (self):
-		return self.backup.Get('com.hubic.backup', 'LastBackup')
+	def downloadInto (self, path):
+		self.backup.DownloadInto (path)
 
-	def getSize (self):
-		return self.backup.Get('com.hubic.backup', 'Size')
+	def attachToThisComputer (self, path):
+		self.backup.AttachToThisComputer (path)
 
-	def getLocalPath (self):
-		return self.backup.Get('com.hubic.backup', 'LocalPath')
+	def getPropertie (self, propName):
+		return self.backup.Get('com.hubic.backup', propName)
 
-	# def _setLocalPath (self, val):
-	# 	self.backup.Set ('com.hubic.backup', 'LocalPath', val)
+	def setPropertie (self, propName, val):
+		if propName == 'DeletePolicy':
+			if val:
+				val = 'keep'
+			else:
+				val = 'delete'
 
-	def getBackupInProgress (self):
-		return self.backup.Get('com.hubic.backup', 'BackupInProgress')
-
-	def getFrequency (self):
-		return self.backup.Get('com.hubic.backup', 'Frequency').lower ()
-
-	def getDeletePolicy (self):
-		return self.backup.Get('com.hubic.backup', 'DeletePolicy').lower ()
-
-	def getVersionsKept (self):
-		return self.backup.Get('com.hubic.backup', 'VersionsKept')
-
-	# def _setVersionsKept (self, val):
-	# 	print ("setVersionKept = " + str (val))
-	# 	self.backup.Set ('com.hubic.backup', 'VersionsKept', val)
-
-
-	# localPath = property(_getLocalPath, _setLocalPath)
-	# versionsKept = property (_getVersionsKept, _setVersionsKept)
+		self.backup.Set ('com.hubic.backup', propName, val, dbus_interface='org.freedesktop.DBus.Properties')
 

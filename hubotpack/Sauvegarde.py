@@ -9,15 +9,13 @@ import dbus
 from .HubicBackup import *
 
 class Sauvegarde:
-	def __init__(self, parent, iterSauvegarde):
+	def __init__(self, parent, iterSauvegarde=None):
 		builder = gtk.Builder()
 		builder.add_from_file(os.path.join ('gui', 'sauvegarde.glade'))  # Rentrez évidemment votre fichier, pas le miens!
 
-		self.parent 	= parent
-		self.name		= self.parent.treestore_sauvegardes.get_value (iterSauvegarde, 1)
-		self.localPath 	= self.parent.treestore_sauvegardes.get_value (iterSauvegarde, 2)
-		self.lastBackup = self.parent.treestore_sauvegardes.get_value (iterSauvegarde, 3)
-		self.size 		= self.parent.treestore_sauvegardes.get_value (iterSauvegarde, 4)
+		self.parent 		= parent
+		self.modifiedList 	= []
+		self.iterSauvegarde = iterSauvegarde
 
 		for o in builder.get_objects():
 			if issubclass(type(o), gtk.Buildable):
@@ -26,43 +24,62 @@ class Sauvegarde:
 
 		builder.connect_signals (self)
 
-		self.backup = HubicBackup (self.name)
-		self.comboboxtext_frequency.set_active_id (self.backup.getFrequency ())
-		self.switch_keepdeleted.set_state (self.backup.getDeletePolicy () == 'keep')
-		self.spinbutton_versionskept.set_value (self.backup.getVersionsKept ())
+		if iterSauvegarde == None:
+			self.new = True
+			self.entry_name.set_sensitive (True)
+			self.label_lastbackup.set_label ('-')
+			self.label_size.set_label ('-')
 
-		self.window_sauvegarde.set_title ("Sauvegarde : {} ".format (self.name))
-		self.filechooserbutton_localpath.set_filename (self.localPath)
-		self.label_name.set_label (self.name)
-		self.label_lastbackup.set_label (self.lastBackup)
-		self.label_size.set_label (convert_size (self.backup.getSize ()))
+		else:
+			self.new = False
+			self.name		= self.parent.treestore_sauvegardes.get_value (iterSauvegarde, 1)
+			self.localPath 	= self.parent.treestore_sauvegardes.get_value (iterSauvegarde, 2)
+			self.lastBackup = self.parent.treestore_sauvegardes.get_value (iterSauvegarde, 3)
+			self.size 		= self.parent.treestore_sauvegardes.get_value (iterSauvegarde, 4)
+
+			self.backup = HubicBackup (self.name)
+			self.comboboxtext_frequency.set_active_id (self.backup.getPropertie ('Frequency'))
+
+			self.switch_keepdeleted.set_state (self.backup.getPropertie ('DeletePolicy').lower () == 'keep')
+			self.spinbutton_versionskept.set_value (self.backup.getPropertie ('VersionsKept'))
+			self.window_sauvegarde.set_title ("Sauvegarde : {} ".format (self.name))
+			self.filechooserbutton_localpath.set_filename (self.localPath)
+			self.entry_name.set_text (self.name)
+			self.entry_name.set_sensitive (False)
+			self.label_lastbackup.set_label (self.lastBackup)
+			self.label_size.set_label (convert_size (self.backup.getPropertie ('Size')))
+		
+		self.modifiedList.clear ()
+
 		self.window_sauvegarde.show_all()
 
+	def on_modification (self, *args):
+		self.modifiedList.append (args[0])
 
+	def on_button_valider_clicked (self, button):
+		path = self.filechooserbutton_localpath.get_filename ()
+		name = self.entry_name.get_text ()
+		frequency = self.comboboxtext_frequency.get_active_id()
+		versionsKept = self.spinbutton_versionskept.get_value_as_int ()
+		keepDeletedFiles = self.switch_keepdeleted.get_state ()
 
-		# ---- DBUS ----
-		# DBusGMainLoop(set_as_default=True)
-        # self.on_state_change(self.hubic_state, 'Starting')
-        # dbus.SystemBus().add_signal_receiver(self.on_networking_change, dbus_interface = 'org.freedesktop.NetworkManager', signal_name = 'StateChanged')
-		#self.session_bus = dbus.SessionBus()
-        # self.session_bus.add_signal_receiver(self.on_file_change, dbus_interface = 'com.hubic.account', signal_name = 'ItemChanged')
-        # self.session_bus.add_signal_receiver(self.on_state_change, dbus_interface = 'com.hubic.general', signal_name = 'StateChanged')
-        # self.session_bus.add_signal_receiver(self.on_message, dbus_interface = 'com.hubic.general', signal_name = 'Messages')
-        # self.session_bus.call_on_disconnection(self.cleanup_dbus_infos)
+		if self.new:
+			hubicAccountObj = SESSION_BUS.get_object(BUSNAME, '/com/hubic/Account')
+			hubicAccountObj.CreateBackup (path, name, frequency, versionsKept, keepDeletedFiles) #, dbus_interface='org.freedesktop.DBus.Properties')
+			self.parent.treestore_sauvegardes.append(self.parent.iterCetOrdi, [True, name, path, '-', '-', True, False])
 
-        # self.hubic_account_obj = self.session_bus.get_object('com.hubiC', '/com/hubic/Account')
-        # self.hubic_account_iface = dbus.Interface(self.hubic_account_obj, 'com.hubic.account')
-        # self.hubic_general_obj = self.session_bus.get_object('com.hubiC', '/com/hubic/General')
-        # self.hubic_general_iface = dbus.Interface(self.hubic_general_obj, 'com.hubic.general')
+		else:
+			if self.filechooserbutton_localpath in self.modifiedList:
+				self.backup.setPropertie ('LocalPath', path)
+				self.parent.treestore_sauvegardes.set_value (self.iterSauvegarde, 2, path)
 
-        # self.ff_helper.set_hubic_dir(self.get_hubic_dir())
-        # self.encfs_menu.set_hubic_dir(self.get_hubic_dir())
-        # self.on_state_change('Starting', self.hubic_general_obj.Get('com.hubic.general', 'CurrentState'))
+			if self.comboboxtext_frequency in self.modifiedList: self.backup.setPropertie ('Frequency', frequency)
+			if self.spinbutton_versionskept in self.modifiedList: self.backup.setPropertie ('VersionsKept', versionsKept)
+			if self.switch_keepdeleted in self.modifiedList: self.backup.setPropertie ('DeletePolicy', keepDeletedFiles)
 
+		self.window_sauvegarde.close ()
 
 	def on_button_annuler_clicked (self, button):
 		self.window_sauvegarde.close ()
-		# h = HubicBackup ("SaveMusic")
-		# h.versionsKept = 12
 
 

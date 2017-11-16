@@ -7,19 +7,35 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkListStore" id="liststore_sauvegardes">
-    <columns>
-      <!-- column-name attached -->
-      <column type="gboolean"/>
-      <!-- column-name name -->
-      <column type="gchararray"/>
-      <!-- column-name localpath -->
-      <column type="gchararray"/>
-      <!-- column-name lastbackup -->
-      <column type="gchararray"/>
-      <!-- column-name size -->
-      <column type="gulong"/>
-    </columns>
+  <object class="GtkImage" id="image_attacher">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-network</property>
+  </object>
+  <object class="GtkImage" id="image_créer">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-add</property>
+  </object>
+  <object class="GtkImage" id="image_download">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-jump-to</property>
+  </object>
+  <object class="GtkImage" id="image_miseajour">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-media-play</property>
+  </object>
+  <object class="GtkImage" id="image_modifier">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-edit</property>
+  </object>
+  <object class="GtkImage" id="image_supprimer">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-remove</property>
   </object>
   <object class="GtkTreeStore" id="treestore_sauvegardes">
     <columns>
@@ -34,6 +50,8 @@
       <!-- column-name size -->
       <column type="gchararray"/>
       <!-- column-name child -->
+      <column type="gboolean"/>
+      <!-- column-name backupinprogress -->
       <column type="gboolean"/>
     </columns>
   </object>
@@ -670,6 +688,7 @@
                     <property name="rules_hint">True</property>
                     <property name="enable_search">False</property>
                     <property name="enable_tree_lines">True</property>
+                    <signal name="cursor-changed" handler="on_treeview_sauvegardes_cursor_changed" swapped="no"/>
                     <signal name="row-activated" handler="on_treeview_sauvegardes_row_activated" swapped="no"/>
                     <child internal-child="selection">
                       <object class="GtkTreeSelection" id="treeview-selection1"/>
@@ -677,6 +696,11 @@
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn1">
                         <property name="title" translatable="yes">Nom</property>
+                        <child>
+                          <object class="GtkCellRendererSpinner" id="cellrendererspinner1">
+                            <property name="visible">False</property>
+                          </object>
+                        </child>
                         <child>
                           <object class="GtkCellRendererPixbuf" id="cellrendererpixbuf1">
                             <property name="stock_id">gtk-harddisk</property>
@@ -748,11 +772,14 @@
                     <property name="can_focus">False</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkButton" id="button_nouvellesauvegarde">
-                        <property name="label" translatable="yes">Créer</property>
+                      <object class="GtkButton" id="button_sauvegarde_creer">
+                        <property name="label" translatable="yes"> Créer</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="image">image_créer</property>
+                        <property name="always_show_image">True</property>
+                        <signal name="clicked" handler="on_button_sauvegarde_creer_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -761,11 +788,14 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button2">
-                        <property name="label" translatable="yes">Supprimer</property>
+                      <object class="GtkButton" id="button_sauvegarde_supprimer">
+                        <property name="label" translatable="yes"> Supprimer</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="image">image_supprimer</property>
+                        <property name="always_show_image">True</property>
+                        <signal name="clicked" handler="on_button_sauvegarde_supprimer_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -775,16 +805,66 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="button_sauvegarde_modif">
-                        <property name="label" translatable="yes">Modifier</property>
+                        <property name="label" translatable="yes"> Modifier</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
+                        <property name="image">image_modifier</property>
+                        <property name="always_show_image">True</property>
                         <signal name="clicked" handler="on_button_sauvegarde_modif_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">True</property>
                         <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="button_sauvegarde_maj">
+                        <property name="label" translatable="yes"> Mise à jour</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="image">image_miseajour</property>
+                        <property name="always_show_image">True</property>
+                        <signal name="clicked" handler="on_button_sauvegarde_maj_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="button_sauvegarde_download">
+                        <property name="label" translatable="yes">Télécharger</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="image">image_download</property>
+                        <property name="always_show_image">True</property>
+                        <signal name="clicked" handler="on_button_sauvegarde_downattach_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="button_sauvegarde_attacher">
+                        <property name="label" translatable="yes">Attacher à cet ordinateur</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="image">image_attacher</property>
+                        <property name="always_show_image">True</property>
+                        <signal name="clicked" handler="on_button_sauvegarde_downattach_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">5</property>
                       </packing>
                     </child>
                   </object>
@@ -886,5 +966,136 @@
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkMessageDialog" id="dialog_sauvegarde_suppr">
+    <property name="can_focus">False</property>
+    <property name="type_hint">dialog</property>
+    <property name="transient_for">window_prefs</property>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="messagedialog-vbox1">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="messagedialog-action_area1">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="button1">
+                <property name="label">gtk-yes</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+                <property name="always_show_image">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button2">
+                <property name="label">gtk-no</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+                <property name="always_show_image">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label10">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="label" translatable="yes">Tous les fichiers ainsi que les versions archivées vont être supprimés de façon permanente. 
+Aucun fichier ne sera supprimé localement.
+Êtes vous sûr(e) de vouloir supprimer cette sauvegarde ?</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="1">button1</action-widget>
+      <action-widget response="2">button2</action-widget>
+    </action-widgets>
+  </object>
+  <object class="GtkFileChooserDialog" id="filechooserdialog_selection_repertoire">
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Veuillez sélectionner le répertoire de destination</property>
+    <property name="type_hint">dialog</property>
+    <property name="transient_for">window_prefs</property>
+    <property name="action">select-folder</property>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="filechooserdialog-vbox1">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="filechooserdialog-action_area1">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="button3">
+                <property name="label">gtk-ok</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="button4">
+                <property name="label">gtk-cancel</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="1">button3</action-widget>
+      <action-widget response="2">button4</action-widget>
+    </action-widgets>
   </object>
 </interface>

@@ -10,6 +10,8 @@
   </object>
   <object class="GtkWindow" id="window_sauvegarde">
     <property name="can_focus">False</property>
+    <property name="margin_left">6</property>
+    <property name="margin_right">6</property>
     <property name="modal">True</property>
     <property name="window_position">center</property>
     <child>
@@ -26,7 +28,7 @@
           <object class="GtkBox" id="box6">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="spacing">20</property>
+            <property name="spacing">11</property>
             <child>
               <object class="GtkLabel" id="label5">
                 <property name="visible">True</property>
@@ -40,13 +42,9 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label_name">
+              <object class="GtkEntry" id="entry_name">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">label</property>
-                <attributes>
-                  <attribute name="weight" value="bold"/>
-                </attributes>
+                <property name="can_focus">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -149,6 +147,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="action">select-folder</property>
+                <signal name="file-set" handler="on_modification" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -191,6 +190,7 @@
                   <item id="weekly" translatable="yes">Une fois par semaine</item>
                   <item id="never" translatable="yes">Jamais (sauvegarde manuelle)</item>
                 </items>
+                <signal name="changed" handler="on_modification" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -231,6 +231,7 @@
                 <property name="progress_pulse_step">0</property>
                 <property name="adjustment">adjustment_nbversion</property>
                 <property name="numeric">True</property>
+                <signal name="changed" handler="on_modification" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -259,6 +260,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <signal name="clicked" handler="on_button_valider_clicked" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -310,6 +312,7 @@
                 <property name="can_focus">True</property>
                 <property name="active">True</property>
                 <property name="state">True</property>
+                <signal name="state-set" handler="on_modification" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>

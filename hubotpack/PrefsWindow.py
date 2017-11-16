@@ -7,6 +7,7 @@ from .LoginWindow import *
 from .Sauvegarde import *
 from .functions import *
 from .HubicBackup import *
+# from .BackupInProgressWatcher import *
 from .vars import *
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk as gtk
@@ -28,11 +29,11 @@ class PrefsWindow:
 
 		self.hubicAccountObj = SESSION_BUS.get_object(BUSNAME, '/com/hubic/Account')
 		self.hubicSettingsObj = SESSION_BUS.get_object(BUSNAME, '/com/hubic/Settings')
-		# self.hubicAccountIFace = dbus.Interface(self.hubicAccountObj, 'com.hubic.account')
-		# self.hubicAccountIFace2 = dbus.Interface(self.hubicAccountObj, dbus_interface='org.freedesktop.DBus.Properties')
-
 		self.excludeList = self.hubicAccountObj.Get('com.hubic.account', 'ExcludedFolders')
 		self.proxyInfoFile = os.path.join(APPDIR, 'proxy')
+		self.iterCetOrdi 	= self.treestore_sauvegardes.append(None, [True, "Cet ordinateur", "", "", "0", False, False])
+		self.iterAutreOrdi 	= self.treestore_sauvegardes.append(None, [False, "Autres ordinateurs", "", "", "0", False, False])
+		# self.backupWatcher = BackupInProgressWatcher (self.treestore_sauvegardes)
 
 		builder.connect_signals (self)
 
@@ -51,6 +52,7 @@ class PrefsWindow:
 
 		self.modifiedList.clear ()
 		self.afficheInfos()
+
 		self.window_prefs.show_all()
 		#self.window.present ()
 		#self.window.set_keep_above (True)
@@ -71,34 +73,29 @@ class PrefsWindow:
 		
 	# ------ Onglet "Compte" ------
 	def afficheInfos (self):
-		account = self.hubicAccountObj.Get('com.hubic.account', 'Account', dbus_interface='org.freedesktop.DBus.Properties')
+		account = self.hubicAccountObj.Get('com.hubic.account', 'Account')
 
 		connect = account != ''
 
 		if connect:
-			print ("[Compte : {}]".format (account))
 			self.label_compte_actuel.set_label (account)
 
 			usedBytes = str (convert_size (self.hubicAccountObj.Get('com.hubic.account', 'UsedBytes')))
 			totalBytes = str (convert_size (self.hubicAccountObj.Get('com.hubic.account', 'TotalBytes')))
 			usage = "{} sur {}".format (usedBytes, totalBytes)
-			print ("[Usage : {}]".format (usage))
 			self.label_statut.set_label(usage)
 
 			synchronizedDir = self.hubicAccountObj.Get('com.hubic.account', 'SynchronizedDir')
-			# synchronizedDir = self.hubicAccountObj.Get('com.hubic.account', 'SynchronizedDir', dbus_interface='org.freedesktop.DBus.Properties')
 
 			if synchronizedDir == '':
 				synchronizedDir = HOMEDIR
 				self.switch_synchro.set_state(False)
 			else:
 				self.switch_synchro.set_state(True)
-				print ("[Synchronized directory : {}]".format (synchronizedDir))
 
 			self.filechooserbutton_emplacement.set_filename (synchronizedDir)
 
 		else:
-			print ("[Déconnecté]")
 			s = 'Déconnecté'
 			self.label_compte_actuel.set_label (s)
 			self.label_statut.set_label('')
@@ -178,14 +175,12 @@ class PrefsWindow:
 		if page_num == 2 and not self.sauvegardeLoaded:
 			self._set_busy_cursor(True)
 			GObject.idle_add(self.afficheSauvegardes)
+			self.sauvegardeLoaded = True
 
 	def afficheSauvegardes (self):	
 
-		iterCetOrdi 	= self.treestore_sauvegardes.append(None, [True, "Cet ordinateur", "", "", "0", False])
-		iterAutreOrdi 	= self.treestore_sauvegardes.append(None, [False, "Autres ordinateurs", "", "", "0", False])
-
-
 		res = os.popen("hubic backup info").readlines()
+		if len (res) == 0: return
 		res = [x.rstrip ('\n') for x in res]
 
 		header = ['Name','Attached','Local path','Last backup','Size']
@@ -206,16 +201,43 @@ class PrefsWindow:
 			size = ligne[headerPos['Size'][0]:headerPos['Size'][0] + headerPos['Size'][1]].strip ()
 
 			if attached:
-				self.treestore_sauvegardes.append(iterCetOrdi, [attached, name, localPath, lastBackup, size, True])
+				self.treestore_sauvegardes.append(self.iterCetOrdi, [attached, name, localPath, lastBackup, size, True, False])
 			else:
-				self.treestore_sauvegardes.append(iterAutreOrdi, [attached, name, localPath, lastBackup, size, True])
+				self.treestore_sauvegardes.append(self.iterAutreOrdi, [attached, name, localPath, lastBackup, size, True, False])
 
 		self.treeview_sauvegardes.expand_all ()
-		self.sauvegardeLoaded = True
+		# self.backupWatcher.start ()
 		self._set_busy_cursor (False)
 
 	def on_treeview_sauvegardes_row_activated (self, treeview, path, column):
 		self.on_button_sauvegarde_modif_clicked (None)
+
+	def on_treeview_sauvegardes_cursor_changed(self, treeview):
+		treeselection = self.treeview_sauvegardes.get_selection()
+		(model, iterSelection) = treeselection.get_selected()
+
+		child = self.treestore_sauvegardes.get_value (iterSelection, 5)
+		attached = self.treestore_sauvegardes.get_value (iterSelection, 0)
+
+		self.button_sauvegarde_maj.set_sensitive (child and attached)
+		self.button_sauvegarde_attacher.set_sensitive (child and not attached)
+		self.button_sauvegarde_supprimer.set_sensitive (child)
+		self.button_sauvegarde_modif.set_sensitive (child)
+		self.button_sauvegarde_download.set_sensitive (child)
+
+
+	def on_button_sauvegarde_creer_clicked (self, button):
+		Sauvegarde (self)
+
+
+
+	def on_button_sauvegarde_supprimer_clicked (self, button):
+		response = self.dialog_sauvegarde_suppr.run()
+		self.dialog_sauvegarde_suppr.hide()
+
+		if response == 1:
+			b = HubicBackup (self.getBackupNameFromSelection ())
+			b.delete ()
 
 	def on_button_sauvegarde_modif_clicked (self, button):
 		treeselection = self.treeview_sauvegardes.get_selection()
@@ -223,8 +245,36 @@ class PrefsWindow:
 
 		child = self.treestore_sauvegardes.get_value (iterSelection, 5)
 		if child:
-			#name = self.treestore_sauvegardes.get_value (iterSelection, 1)
 			Sauvegarde (self, iterSelection)
+
+	def on_button_sauvegarde_maj_clicked(self, button):
+		b = HubicBackup (self.getBackupNameFromSelection ())
+		b.backupNow ()
+
+	def on_button_sauvegarde_downattach_clicked(self, button):
+		response = self.filechooserdialog_selection_repertoire.run()
+		self.filechooserdialog_selection_repertoire.hide()
+
+		if response != 1: return
+
+		path = self.filechooserdialog_selection_repertoire.get_filename ()
+		if os.listdir(path):
+			messageBox (self.window_prefs, "Le répertoire de destination doit être vide !", messageType=gtk.MessageType.ERROR)
+			return
+
+		b = HubicBackup (self.getBackupNameFromSelection ())
+		if button == self.button_sauvegarde_download:
+			b.downloadInto (path)
+		elif button == self.button_sauvegarde_attacher:
+			b.attachToThisComputer (path)
+
+
+	def getBackupNameFromSelection (self):
+		treeselection = self.treeview_sauvegardes.get_selection()
+		(model, iterSelection) = treeselection.get_selected()
+		name = self.treestore_sauvegardes.get_value (iterSelection, 1)
+
+		return name
 
 
 	# ------ Boutons Valider et Annuler ------
@@ -307,5 +357,17 @@ class PrefsWindow:
 
 	def on_button_annuler_clicked (self, button):
 		self.window_prefs.close ()
+
+		# o = self.hubicAccountObj.Get('com.hubic.account', 'RunningOperations')
+
+		# if len (o) == 0: return
+
+		# print (o[0][0])
+		# print (o[0][1])
+		# print (o[0][2])
+		# print (o[0][3])
+		# print (o[0][4])
+		# print (o[0][5])
+
 
 		
