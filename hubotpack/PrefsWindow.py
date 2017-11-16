@@ -35,27 +35,12 @@ class PrefsWindow:
 
 		builder.connect_signals (self)
 
-		# Chargement des infos de connexion au proxy :
-		try:
-			with open(self.proxyInfoFile, 'rb') as fichier:
-				mon_depickler = pickle.Unpickler(fichier)
-				self.switch_proxy.set_state (mon_depickler.load())
-				self.entry_hote.set_text (mon_depickler.load())
-				self.entry_port.set_text (mon_depickler.load())
-				self.switch_proxy_auth.set_state (mon_depickler.load())
-				self.entry_proxy_user.set_text (mon_depickler.load())
-				self.entry_proxy_passwd.set_text (mon_depickler.load())
-		except FileNotFoundError:
-			pass
-
 		self.afficheInfos()
 		self.modifiedList.clear ()
 
 		self.window_prefs.show_all()
 		#self.window.present ()
 		#self.window.set_keep_above (True)
-
-
 
 	def _set_busy_cursor(self, busy):
 		cursor = None
@@ -100,8 +85,16 @@ class PrefsWindow:
 
 			self.checkbutton_limitupload.set_active (uploadLimit > 0)
 			self.checkbutton_limitdownload.set_active (downloadLimit > 0)
-			# self.entry_limit_upload.set_sensitive (uploadLimit > 0)
-			# self.entry_limit_download.set_sensitive (downloadLimit > 0)
+
+			self.switch_proxy.set_state (self.hubicSettings.getPropertie ('ProxyEnabled'))
+			self.entry_hote.set_text (self.hubicSettings.getPropertie ('ProxyHost'))
+			self.entry_port.set_text (str (self.hubicSettings.getPropertie ('ProxyPort')))
+
+			userName = self.hubicSettings.getPropertie ('ProxyUsername')
+			self.switch_proxy_auth.set_state (userName != '')
+			self.entry_proxy_user.set_text (userName)
+			# self.entry_proxy_passwd.set_text (hubicSettings.getPropertie ('ProxyUsername'))
+
 
 		else:
 			# TODO : Rendre insensitive les onglets options avancées et sauvegarde
@@ -378,16 +371,6 @@ class PrefsWindow:
 		else:
 			if self.switch_proxy in self.modifiedList:
 				self.hubicSettings.unsetProxy ()
-
-		# Sauvegarde des objets dans un fichier de données :
-		with open(self.proxyInfoFile, 'wb') as fichier:
-			p = pickle.Pickler(fichier)
-			p.dump(proxy_sw)
-			p.dump(proxy_hote)
-			p.dump(proxy_port)
-			p.dump(proxy_sw_auth)
-			p.dump(proxy_user)
-			p.dump(proxy_passwd)
 
 		self.window_prefs.close ()
 
