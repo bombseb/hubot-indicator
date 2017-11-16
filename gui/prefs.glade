@@ -913,6 +913,7 @@
                       <object class="GtkButton" id="button_sauvegarde_supprimer">
                         <property name="label" translatable="yes"> Supprimer</property>
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="image">image_supprimer</property>
@@ -929,6 +930,7 @@
                       <object class="GtkButton" id="button_sauvegarde_modif">
                         <property name="label" translatable="yes"> Modifier</property>
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="image">image_modifier</property>
@@ -945,6 +947,7 @@
                       <object class="GtkButton" id="button_sauvegarde_maj">
                         <property name="label" translatable="yes"> Mise à jour</property>
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="image">image_miseajour</property>
@@ -961,6 +964,7 @@
                       <object class="GtkButton" id="button_sauvegarde_download">
                         <property name="label" translatable="yes">Télécharger</property>
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="image">image_download</property>
@@ -977,6 +981,7 @@
                       <object class="GtkButton" id="button_sauvegarde_attacher">
                         <property name="label" translatable="yes">Attacher à cet ordinateur</property>
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="image">image_attacher</property>

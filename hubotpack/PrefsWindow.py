@@ -97,7 +97,6 @@ class PrefsWindow:
 
 
 		else:
-			# TODO : Rendre insensitive les onglets options avancées et sauvegarde
 			s = 'Déconnecté'
 			self.label_compte_actuel.set_label (s)
 			self.label_statut.set_label('')
@@ -105,6 +104,8 @@ class PrefsWindow:
 			self.filechooserbutton_emplacement.set_filename (s)
 
 		self.frame_synchro.set_sensitive(connect)
+		self.setEnableTab (1, connect)
+		self.setEnableTab (2, connect)
 
 
 	def on_button_login_clicked (self, button):
@@ -185,7 +186,6 @@ class PrefsWindow:
 			self.sauvegardeLoaded = True
 
 	def afficheSauvegardes (self):	
-
 		res = os.popen("hubic backup info").readlines()
 		if len (res) == 0: return
 		res = [x.rstrip ('\n') for x in res]
@@ -379,6 +379,10 @@ class PrefsWindow:
 		text = editable.get_text().strip()
 		editable.set_text(''.join([i for i in text if i in '0123456789']))
 		self.modifiedList.append (editable)
+
+	def setEnableTab (self, tabNum, enable):
+		w = self.notebook_prefs.get_nth_page (tabNum)
+		w.set_sensitive (enable)
 
 	def on_button_annuler_clicked (self, button):
 		self.window_prefs.close ()
