@@ -6,17 +6,15 @@ from .SelectDirs import *
 from .LoginWindow import *
 from .Sauvegarde import *
 from .functions import *
-from .HubicBackup import *
 # from .BackupInProgressWatcher import *
 from .vars import *
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk as gtk
-import dbus
 
 class PrefsWindow:
 	def __init__(self):
 		builder = gtk.Builder()
-		builder.add_from_file(os.path.join ('gui', 'prefs.glade'))  # Rentrez évidemment votre fichier, pas le miens!
+		builder.add_from_file(os.path.join ('gui', 'prefs.glade'))
 
 		self.modifiedList = []
 
@@ -27,9 +25,8 @@ class PrefsWindow:
 
 		self.sauvegardeLoaded = False
 
-		self.hubicAccountObj = SESSION_BUS.get_object(BUSNAME, '/com/hubic/Account')
-		self.hubicSettingsObj = SESSION_BUS.get_object(BUSNAME, '/com/hubic/Settings')
-		self.excludeList = self.hubicAccountObj.Get('com.hubic.account', 'ExcludedFolders')
+		self.hubicSettings = HubicSettings ()
+		self.excludeList = hubicAccount.getPropertie('ExcludedFolders')
 		self.proxyInfoFile = os.path.join(APPDIR, 'proxy')
 		self.iterCetOrdi 	= self.treestore_sauvegardes.append(None, [True, "Cet ordinateur", "", "", "0", False, False])
 		self.iterAutreOrdi 	= self.treestore_sauvegardes.append(None, [False, "Autres ordinateurs", "", "", "0", False, False])
@@ -73,19 +70,19 @@ class PrefsWindow:
 		
 	# ------ Onglet "Compte" ------
 	def afficheInfos (self):
-		account = self.hubicAccountObj.Get('com.hubic.account', 'Account')
+		account = hubicAccount.getPropertie ('Account')
 
 		connect = account != ''
 
 		if connect:
 			self.label_compte_actuel.set_label (account)
 
-			usedBytes = str (convert_size (self.hubicAccountObj.Get('com.hubic.account', 'UsedBytes')))
-			totalBytes = str (convert_size (self.hubicAccountObj.Get('com.hubic.account', 'TotalBytes')))
+			usedBytes = str (convert_size (hubicAccount.getPropertie('UsedBytes')))
+			totalBytes = str (convert_size (hubicAccount.getPropertie('TotalBytes')))
 			usage = "{} sur {}".format (usedBytes, totalBytes)
 			self.label_statut.set_label(usage)
 
-			synchronizedDir = self.hubicAccountObj.Get('com.hubic.account', 'SynchronizedDir')
+			synchronizedDir = hubicAccount.getPropertie('SynchronizedDir')
 
 			if synchronizedDir == '':
 				synchronizedDir = HOMEDIR
@@ -109,7 +106,7 @@ class PrefsWindow:
 		LoginWindow(self.afficheInfos)
 
 	def on_button_logout_clicked (self, button):
-		self.hubicAccountObj.Logout (dbus_interface='com.hubic.account')
+		hubicAccount.logout ()
 		self.afficheInfos ()
 
 		self.switch_synchro.set_state (False)
@@ -226,12 +223,6 @@ class PrefsWindow:
 		self.button_sauvegarde_modif.set_sensitive (child)
 		self.button_sauvegarde_download.set_sensitive (child)
 
-
-	def on_button_sauvegarde_creer_clicked (self, button):
-		Sauvegarde (self)
-
-
-
 	def on_button_sauvegarde_supprimer_clicked (self, button):
 		response = self.dialog_sauvegarde_suppr.run()
 		self.dialog_sauvegarde_suppr.hide()
@@ -243,6 +234,9 @@ class PrefsWindow:
 			self.treestore_sauvegardes.remove (iterSelection)
 			b = HubicBackup (name)
 			b.delete ()
+
+	def on_button_sauvegarde_creer_clicked (self, button):
+		Sauvegarde (self)
 
 	def on_button_sauvegarde_modif_clicked (self, button):
 		treeselection = self.treeview_sauvegardes.get_selection()
@@ -273,7 +267,6 @@ class PrefsWindow:
 		elif button == self.button_sauvegarde_attacher:
 			b.attachToThisComputer (path)
 
-
 	def getBackupNameFromSelection (self):
 		treeselection = self.treeview_sauvegardes.get_selection()
 		(model, iterSelection) = treeselection.get_selected()
@@ -291,14 +284,13 @@ class PrefsWindow:
 		if self.switch_synchro.get_state ():
 			if self.filechooserbutton_emplacement in self.modifiedList:
 				synchroPath = self.filechooserbutton_emplacement.get_filename ()
-				# self.hubicAccountIFace2.Set('com.hubic.account', 'SynchronizedDir', synchroPath)
-				self.hubicAccountObj.Set ('com.hubic.account', 'SynchronizedDir', synchroPath, dbus_interface='org.freedesktop.DBus.Properties')
+				hubicAccount.setPropertie('SynchronizedDir', synchroPath)
 
 			if self.excludeList in self.modifiedList:
-				self.hubicAccountObj.Set ('com.hubic.account', 'ExcludedFolders', self.excludeList, dbus_interface='org.freedesktop.DBus.Properties')
+				hubicAccount.setPropertie('ExcludedFolders', self.excludeList)
 		else:
 			if self.switch_synchro in self.modifiedList:
-				self.hubicAccountObj.Set ('com.hubic.account', 'SynchronizedDir', '', dbus_interface='org.freedesktop.DBus.Properties')
+				hubicAccount.setPropertie('SynchronizedDir', '')
 
 
 		# Onglet "Options avancées"
@@ -339,13 +331,13 @@ class PrefsWindow:
 				if proxy_sw_auth:
 					if self.entry_proxy_user in self.modifiedList or self.entry_proxy_passwd in self.modifiedList \
 						or self.switch_proxy_auth in self.modifiedList:
-						self.hubicSettingsObj.SetAuthenticatedProxy (proxy_hote, int (proxy_port), proxy_user, proxy_passwd, dbus_interface='com.hubic.settings')
+						self.hubicSettings.setAuthenticatedProxy (proxy_hote, int (proxy_port), proxy_user, proxy_passwd)
 				else:
-					self.hubicSettingsObj.SetProxy (proxy_hote, int (proxy_port), dbus_interface='com.hubic.settings')
+					self.hubicSettings.setProxy (proxy_hote, int (proxy_port))
 
 		else:
 			if self.switch_proxy in self.modifiedList:
-				self.hubicSettingsObj.UnsetProxy (dbus_interface='com.hubic.settings')
+				self.hubicSettings.unsetProxy ()
 
 		# Sauvegarde des objets dans un fichier de données :
 		with open(self.proxyInfoFile, 'wb') as fichier:

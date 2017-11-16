@@ -2,11 +2,10 @@
 import os
 import gi
 from .functions import *
+from .vars import *
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk as gtk
 
-import dbus
-from .HubicBackup import *
 
 class Sauvegarde:
 	def __init__(self, parent, iterSauvegarde=None):
@@ -64,8 +63,7 @@ class Sauvegarde:
 		keepDeletedFiles = self.switch_keepdeleted.get_state ()
 
 		if self.new:
-			hubicAccountObj = SESSION_BUS.get_object(BUSNAME, '/com/hubic/Account')
-			hubicAccountObj.CreateBackup (path, name, frequency, versionsKept, keepDeletedFiles) #, dbus_interface='org.freedesktop.DBus.Properties')
+			hubicAccount.createBackup (path, name, frequency, versionsKept, keepDeletedFiles)
 			self.parent.treestore_sauvegardes.append(self.parent.iterCetOrdi, [True, name, path, '-', '-', True, False])
 
 		else:
@@ -73,9 +71,18 @@ class Sauvegarde:
 				self.backup.setPropertie ('LocalPath', path)
 				self.parent.treestore_sauvegardes.set_value (self.iterSauvegarde, 2, path)
 
-			if self.comboboxtext_frequency in self.modifiedList: self.backup.setPropertie ('Frequency', frequency)
-			if self.spinbutton_versionskept in self.modifiedList: self.backup.setPropertie ('VersionsKept', versionsKept)
-			if self.switch_keepdeleted in self.modifiedList: self.backup.setPropertie ('DeletePolicy', keepDeletedFiles)
+			if self.comboboxtext_frequency in self.modifiedList:
+				self.backup.setPropertie ('Frequency', frequency)
+
+			if self.spinbutton_versionskept in self.modifiedList:
+				self.backup.setPropertie ('VersionsKept', versionsKept)
+
+			if self.switch_keepdeleted in self.modifiedList:
+				if keepDeletedFiles:
+					keepDeletedFiles = 'keep'
+				else:
+					keepDeletedFiles = 'delete'
+				self.backup.setPropertie ('DeletePolicy', keepDeletedFiles)
 
 		self.window_sauvegarde.close ()
 

@@ -1,4 +1,3 @@
-#! /usr/bin/python3
 # -*- coding: utf-8 -*-
 import os
 import gi
@@ -40,7 +39,7 @@ class SelectDirs:
 
 		#print (rootDir)
 
-		read_write = os.access (rootDir, os.X_OK) #os.access(rootDir, os.W_OK) and os.access(rootDir, os.R_OK)
+		read_write = os.access (rootDir, os.X_OK)
 		if not read_write:
 			return
 

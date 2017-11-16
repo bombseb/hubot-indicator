@@ -5,7 +5,7 @@ from .vars import *
 from .functions import *
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk as gtk, Gdk as gdk, GObject
-import dbus
+from .HubicDBus import * 
 
 
 class LoginWindow:
@@ -44,11 +44,8 @@ class LoginWindow:
 		email = self.entry_mail.get_text ()
 		passwd = self.entry_pass.get_text ()
 
-		hubicGeneralObj = SESSION_BUS.get_object('com.hubiC', '/com/hubic/General')
-		hubicGeneralIFace = dbus.Interface(hubicGeneralObj, 'com.hubic.general')
-
 		try:
-			hubicGeneralIFace.Login (email, passwd, '')
+			hubicGeneral.login (email, passwd, '')
 		except dbus.exceptions.DBusException as e:
 			messageBox (self.window, e.get_dbus_message (), messageType=gtk.MessageType.ERROR)
 

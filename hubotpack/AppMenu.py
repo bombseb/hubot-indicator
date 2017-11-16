@@ -5,6 +5,7 @@ from .PrefsWindow import *
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk as gtk
 from .vars import *
+from .HubicDBus import *
 
 
 class AppMenu(gtk.Menu):
@@ -33,13 +34,9 @@ class AppMenu(gtk.Menu):
 		item.connect('activate', self.quit)
 		self.append(item)
 
-		self.hubicGeneral = SESSION_BUS.get_object(BUSNAME, '/com/hubic/General')
-		s = self.hubicGeneral.Get('com.hubic.general', 'CurrentState')
+		s = hubicGeneral.getPropertie ('CurrentState')
 		self.on_state_changed (None, s)
-		SESSION_BUS.add_signal_receiver(self.on_state_changed, dbus_interface = 'com.hubic.general', signal_name = 'StateChanged')
-
-		self.hubicAccount = SESSION_BUS.get_object(BUSNAME, '/com/hubic/Account')
-		self.hubicAccountIFace = dbus.Interface(self.hubicAccount, 'com.hubic.account')
+		hubicGeneral.addCallBack (self.on_state_changed, 'StateChanged')
 
 		self.show_all()
 
@@ -47,21 +44,21 @@ class AppMenu(gtk.Menu):
 		PrefsWindow ()
 
 	def pause(self, menuItem):
-		self.hubicAccountIFace.SetPauseState (True)
+		hubicAccount.setPauseState (True)
 
 		menuItem.set_label ("Enlever la pause")
 		menuItem.disconnect(self.pauseResume_handler_ID)
 		self.pauseResume_handler_ID = menuItem.connect ('activate', self.resume)
 
 	def resume(self, menuItem):
-		self.hubicAccountIFace.SetPauseState (False)
+		hubicAccount.setPauseState (False)
 
 		menuItem.set_label ("Mettre en pause")
 		menuItem.disconnect(self.pauseResume_handler_ID)
 		self.pauseResume_handler_ID = menuItem.connect ('activate', self.pause)
 
 	def synchro(self, menuItem):
-		self.hubicAccountIFace.SynchronizeNow ()
+		hubicAccount.synchronizeNow ()
 
 	def quit(self, menuItem):
 		gtk.main_quit()
