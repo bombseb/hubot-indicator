@@ -34,7 +34,7 @@ class AppMenu(gtk.Menu):
 		item.connect('activate', self.quit)
 		self.append(item)
 
-		s = hubicGeneral.getPropertie ('CurrentState')
+		s = hubicGeneral.getProperty ('CurrentState')
 		self.on_state_changed (None, s)
 		hubicGeneral.addCallBack (self.on_state_changed, 'StateChanged')
 

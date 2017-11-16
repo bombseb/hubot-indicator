@@ -27,7 +27,7 @@ class PrefsWindow:
 		self.sauvegardeLoaded = False
 
 		self.hubicSettings = HubicSettings ()
-		self.excludeList = hubicAccount.getPropertie('ExcludedFolders')
+		self.excludeList = hubicAccount.getProperty('ExcludedFolders')
 		self.proxyInfoFile = os.path.join(APPDIR, 'proxy')
 		self.iterCetOrdi 	= self.treestore_sauvegardes.append(None, [True, "Cet ordinateur", "", "", "0", False, False])
 		self.iterAutreOrdi 	= self.treestore_sauvegardes.append(None, [False, "Autres ordinateurs", "", "", "0", False, False])
@@ -56,19 +56,19 @@ class PrefsWindow:
 		
 	# ------ Onglet "Compte" ------
 	def afficheInfos (self):
-		account = hubicAccount.getPropertie ('Account')
+		account = hubicAccount.getProperty ('Account')
 
 		connect = account != ''
 
 		if connect:
 			self.label_compte_actuel.set_label (account)
 
-			usedBytes = str (convert_size (hubicAccount.getPropertie('UsedBytes')))
-			totalBytes = str (convert_size (hubicAccount.getPropertie('TotalBytes')))
+			usedBytes = str (convert_size (hubicAccount.getProperty('UsedBytes')))
+			totalBytes = str (convert_size (hubicAccount.getProperty('TotalBytes')))
 			usage = "{} sur {}".format (usedBytes, totalBytes)
 			self.label_statut.set_label(usage)
 
-			synchronizedDir = hubicAccount.getPropertie('SynchronizedDir')
+			synchronizedDir = hubicAccount.getProperty('SynchronizedDir')
 
 			if synchronizedDir == '':
 				synchronizedDir = HOMEDIR
@@ -78,22 +78,22 @@ class PrefsWindow:
 
 			self.filechooserbutton_emplacement.set_filename (synchronizedDir)
 
-			uploadLimit = self.hubicSettings.getPropertie ('UploadSpeedLimit')
-			downloadLimit = self.hubicSettings.getPropertie ('DownloadSpeedLimit')
+			uploadLimit = self.hubicSettings.getProperty ('UploadSpeedLimit')
+			downloadLimit = self.hubicSettings.getProperty ('DownloadSpeedLimit')
 			self.entry_limit_upload.set_text (str (uploadLimit))
 			self.entry_limit_download.set_text (str (downloadLimit))
 
 			self.checkbutton_limitupload.set_active (uploadLimit > 0)
 			self.checkbutton_limitdownload.set_active (downloadLimit > 0)
 
-			self.switch_proxy.set_state (self.hubicSettings.getPropertie ('ProxyEnabled'))
-			self.entry_hote.set_text (self.hubicSettings.getPropertie ('ProxyHost'))
-			self.entry_port.set_text (str (self.hubicSettings.getPropertie ('ProxyPort')))
+			self.switch_proxy.set_state (self.hubicSettings.getProperty ('ProxyEnabled'))
+			self.entry_hote.set_text (self.hubicSettings.getProperty ('ProxyHost'))
+			self.entry_port.set_text (str (self.hubicSettings.getProperty ('ProxyPort')))
 
-			userName = self.hubicSettings.getPropertie ('ProxyUsername')
+			userName = self.hubicSettings.getProperty ('ProxyUsername')
 			self.switch_proxy_auth.set_state (userName != '')
 			self.entry_proxy_user.set_text (userName)
-			# self.entry_proxy_passwd.set_text (hubicSettings.getPropertie ('ProxyUsername'))
+			# self.entry_proxy_passwd.set_text (hubicSettings.getProperty ('ProxyUsername'))
 
 
 		else:
@@ -294,13 +294,13 @@ class PrefsWindow:
 		if self.switch_synchro.get_state ():
 			if self.filechooserbutton_emplacement in self.modifiedList:
 				synchroPath = self.filechooserbutton_emplacement.get_filename ()
-				hubicAccount.setPropertie('SynchronizedDir', synchroPath)
+				hubicAccount.setProperty('SynchronizedDir', synchroPath)
 
 			if self.excludeList in self.modifiedList:
-				hubicAccount.setPropertie('ExcludedFolders', self.excludeList)
+				hubicAccount.setProperty('ExcludedFolders', self.excludeList)
 		else:
 			if self.switch_synchro in self.modifiedList:
-				hubicAccount.setPropertie('SynchronizedDir', '')
+				hubicAccount.setProperty('SynchronizedDir', '')
 
 
 		# Onglet "Options avancées"
@@ -310,22 +310,22 @@ class PrefsWindow:
 
 		if self.checkbutton_limitupload in self.modifiedList:
 			if self.checkbutton_limitupload.get_active ():
-				self.hubicSettings.setPropertie ('UploadSpeedLimit', uploadLimit)
+				self.hubicSettings.setProperty ('UploadSpeedLimit', uploadLimit)
 			else:
-				self.hubicSettings.setPropertie ('UploadSpeedLimit', 0)
+				self.hubicSettings.setProperty ('UploadSpeedLimit', 0)
 		elif self.entry_limit_upload in self.modifiedList:
-			self.hubicSettings.setPropertie ('UploadSpeedLimit', uploadLimit)
+			self.hubicSettings.setProperty ('UploadSpeedLimit', uploadLimit)
 
 		# Limite en download
 		downloadLimit = int (self.entry_limit_download.get_text())
 
 		if self.checkbutton_limitdownload in self.modifiedList:
 			if self.checkbutton_limitdownload.get_active ():
-				self.hubicSettings.setPropertie ('DownloadSpeedLimit', downloadLimit)
+				self.hubicSettings.setProperty ('DownloadSpeedLimit', downloadLimit)
 			else:
-				self.hubicSettings.setPropertie ('DownloadSpeedLimit', 0)
+				self.hubicSettings.setProperty ('DownloadSpeedLimit', 0)
 		elif self.entry_limit_download in self.modifiedList:
-			self.hubicSettings.setPropertie ('DownloadSpeedLimit', downloadLimit)
+			self.hubicSettings.setProperty ('DownloadSpeedLimit', downloadLimit)
 
 		proxy_sw = self.switch_proxy.get_state ()
 		proxy_hote = self.entry_hote.get_text ()

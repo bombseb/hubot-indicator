@@ -16,10 +16,10 @@ class HubicDBus:
 		self.dbusObj = SESSION_BUS.get_object(BUSNAME, '/com/hubic/' + objName)
 		self.api = api
 
-	def getPropertie (self, propName):
+	def getProperty (self, propName):
 		return self.dbusObj.Get(self.api, propName)
 
-	def setPropertie (self, propName, val):
+	def setProperty (self, propName, val):
 		self.dbusObj.Set (self.api, propName, val, dbus_interface='org.freedesktop.DBus.Properties')
 
 	def addCallBack (self, function, signal_name):

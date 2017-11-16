@@ -37,16 +37,16 @@ class Sauvegarde:
 			self.size 		= self.parent.treestore_sauvegardes.get_value (iterSauvegarde, 4)
 
 			self.backup = HubicBackup (self.name)
-			self.comboboxtext_frequency.set_active_id (self.backup.getPropertie ('Frequency'))
+			self.comboboxtext_frequency.set_active_id (self.backup.getProperty ('Frequency'))
 
-			self.switch_keepdeleted.set_state (self.backup.getPropertie ('DeletePolicy').lower () == 'keep')
-			self.spinbutton_versionskept.set_value (self.backup.getPropertie ('VersionsKept'))
+			self.switch_keepdeleted.set_state (self.backup.getProperty ('DeletePolicy').lower () == 'keep')
+			self.spinbutton_versionskept.set_value (self.backup.getProperty ('VersionsKept'))
 			self.window_sauvegarde.set_title ("Sauvegarde : {} ".format (self.name))
 			self.filechooserbutton_localpath.set_filename (self.localPath)
 			self.entry_name.set_text (self.name)
 			self.entry_name.set_sensitive (False)
 			self.label_lastbackup.set_label (self.lastBackup)
-			self.label_size.set_label (convert_size (self.backup.getPropertie ('Size')))
+			self.label_size.set_label (convert_size (self.backup.getProperty ('Size')))
 		
 		self.modifiedList.clear ()
 
@@ -68,21 +68,21 @@ class Sauvegarde:
 
 		else:
 			if self.filechooserbutton_localpath in self.modifiedList:
-				self.backup.setPropertie ('LocalPath', path)
+				self.backup.setProperty ('LocalPath', path)
 				self.parent.treestore_sauvegardes.set_value (self.iterSauvegarde, 2, path)
 
 			if self.comboboxtext_frequency in self.modifiedList:
-				self.backup.setPropertie ('Frequency', frequency)
+				self.backup.setProperty ('Frequency', frequency)
 
 			if self.spinbutton_versionskept in self.modifiedList:
-				self.backup.setPropertie ('VersionsKept', versionsKept)
+				self.backup.setProperty ('VersionsKept', versionsKept)
 
 			if self.switch_keepdeleted in self.modifiedList:
 				if keepDeletedFiles:
 					keepDeletedFiles = 'keep'
 				else:
 					keepDeletedFiles = 'delete'
-				self.backup.setPropertie ('DeletePolicy', keepDeletedFiles)
+				self.backup.setProperty ('DeletePolicy', keepDeletedFiles)
 
 		self.window_sauvegarde.close ()
 
