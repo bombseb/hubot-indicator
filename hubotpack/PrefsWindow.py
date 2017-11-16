@@ -207,6 +207,7 @@ class PrefsWindow:
 
 		self.treeview_sauvegardes.expand_all ()
 		# self.backupWatcher.start ()
+
 		self._set_busy_cursor (False)
 
 	def on_treeview_sauvegardes_row_activated (self, treeview, path, column):
@@ -236,7 +237,11 @@ class PrefsWindow:
 		self.dialog_sauvegarde_suppr.hide()
 
 		if response == 1:
-			b = HubicBackup (self.getBackupNameFromSelection ())
+			treeselection = self.treeview_sauvegardes.get_selection()
+			(model, iterSelection) = treeselection.get_selected()
+			name = self.treestore_sauvegardes.get_value (iterSelection, 1)
+			self.treestore_sauvegardes.remove (iterSelection)
+			b = HubicBackup (name)
 			b.delete ()
 
 	def on_button_sauvegarde_modif_clicked (self, button):
@@ -357,17 +362,3 @@ class PrefsWindow:
 
 	def on_button_annuler_clicked (self, button):
 		self.window_prefs.close ()
-
-		# o = self.hubicAccountObj.Get('com.hubic.account', 'RunningOperations')
-
-		# if len (o) == 0: return
-
-		# print (o[0][0])
-		# print (o[0][1])
-		# print (o[0][2])
-		# print (o[0][3])
-		# print (o[0][4])
-		# print (o[0][5])
-
-
-		
