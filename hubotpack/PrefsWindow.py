@@ -48,8 +48,8 @@ class PrefsWindow:
 		except FileNotFoundError:
 			pass
 
-		self.modifiedList.clear ()
 		self.afficheInfos()
+		self.modifiedList.clear ()
 
 		self.window_prefs.show_all()
 		#self.window.present ()
@@ -93,7 +93,18 @@ class PrefsWindow:
 
 			self.filechooserbutton_emplacement.set_filename (synchronizedDir)
 
+			uploadLimit = self.hubicSettings.getPropertie ('UploadSpeedLimit')
+			downloadLimit = self.hubicSettings.getPropertie ('DownloadSpeedLimit')
+			self.entry_limit_upload.set_text (str (uploadLimit))
+			self.entry_limit_download.set_text (str (downloadLimit))
+
+			self.checkbutton_limitupload.set_active (uploadLimit > 0)
+			self.checkbutton_limitdownload.set_active (downloadLimit > 0)
+			# self.entry_limit_upload.set_sensitive (uploadLimit > 0)
+			# self.entry_limit_download.set_sensitive (downloadLimit > 0)
+
 		else:
+			# TODO : Rendre insensitive les onglets options avancées et sauvegarde
 			s = 'Déconnecté'
 			self.label_compte_actuel.set_label (s)
 			self.label_statut.set_label('')
@@ -131,6 +142,16 @@ class PrefsWindow:
 
 
 	# ------ Onglet Options avancées ------
+	def on_checkbutton_limitdownload_toggled(self, toggle_button):
+		a = self.checkbutton_limitdownload.get_active ()
+		self.entry_limit_download.set_sensitive (a)
+		self.modifiedList.append (self.checkbutton_limitdownload)
+
+	def on_checkbutton_limitupload_toggled(self, toggle_button):
+		a = self.checkbutton_limitupload.get_active ()
+		self.entry_limit_upload.set_sensitive (a)
+		self.modifiedList.append (self.checkbutton_limitupload)
+
 	def on_switch_proxy_state_set(self, switch, state):
 
 		self.label_hote.set_sensitive (state)
@@ -155,11 +176,6 @@ class PrefsWindow:
 
 	def on_entry_hote_changed(self, editable):
 		self.modifiedList.append (self.entry_hote)
-
-	def on_entry_port_changed(self, editable):
-		text = self.entry_port.get_text().strip()
-		self.entry_port.set_text(''.join([i for i in text if i in '0123456789']))
-		self.modifiedList.append (self.entry_port)
 
 	def on_entry_proxy_user_changed(self, editable):
 		self.modifiedList.append (self.entry_proxy_user)
@@ -295,6 +311,29 @@ class PrefsWindow:
 
 
 		# Onglet "Options avancées"
+
+		# Limite en upload
+		uploadLimit = int (self.entry_limit_upload.get_text())
+
+		if self.checkbutton_limitupload in self.modifiedList:
+			if self.checkbutton_limitupload.get_active ():
+				self.hubicSettings.setPropertie ('UploadSpeedLimit', uploadLimit)
+			else:
+				self.hubicSettings.setPropertie ('UploadSpeedLimit', 0)
+		elif self.entry_limit_upload in self.modifiedList:
+			self.hubicSettings.setPropertie ('UploadSpeedLimit', uploadLimit)
+
+		# Limite en download
+		downloadLimit = int (self.entry_limit_download.get_text())
+
+		if self.checkbutton_limitdownload in self.modifiedList:
+			if self.checkbutton_limitdownload.get_active ():
+				self.hubicSettings.setPropertie ('DownloadSpeedLimit', downloadLimit)
+			else:
+				self.hubicSettings.setPropertie ('DownloadSpeedLimit', 0)
+		elif self.entry_limit_download in self.modifiedList:
+			self.hubicSettings.setPropertie ('DownloadSpeedLimit', downloadLimit)
+
 		proxy_sw = self.switch_proxy.get_state ()
 		proxy_hote = self.entry_hote.get_text ()
 		proxy_port = self.entry_port.get_text ()
@@ -351,6 +390,12 @@ class PrefsWindow:
 			p.dump(proxy_passwd)
 
 		self.window_prefs.close ()
+
+
+	def on_entry_number_changed(self, editable):
+		text = editable.get_text().strip()
+		editable.set_text(''.join([i for i in text if i in '0123456789']))
+		self.modifiedList.append (editable)
 
 	def on_button_annuler_clicked (self, button):
 		self.window_prefs.close ()
