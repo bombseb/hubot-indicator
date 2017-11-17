@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import gi
-import pickle
 from .SelectDirs import *
 from .LoginWindow import *
 from .Sauvegarde import *
@@ -198,7 +197,6 @@ class PrefsWindow:
 			headerPos[e] = (pos, length)
 			pos += length
 
-		test = []
 		for i, ligne in enumerate (res):
 			if i == 0 : continue
 			name = ligne[headerPos['Name'][0]:headerPos['Name'][0] + headerPos['Name'][1]].strip ().replace (' ', '_')

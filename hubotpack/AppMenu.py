@@ -6,7 +6,8 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk as gtk
 from .vars import *
 from .HubicDBus import *
-
+from .functions import *
+from .RunningOperations import *
 
 class AppMenu(gtk.Menu):
 	def __init__(self, indicator):
@@ -30,6 +31,10 @@ class AppMenu(gtk.Menu):
 		item.connect('activate', self.prefs)
 		self.append(item)
 
+		item = gtk.MenuItem('Voir les opérations en cours')
+		item.connect('activate', self.runningOperations)
+		self.append(item)
+
 		item = gtk.MenuItem('Quit')
 		item.connect('activate', self.quit)
 		self.append(item)
@@ -46,6 +51,9 @@ class AppMenu(gtk.Menu):
 			self.prefsWindow.window_prefs.present ()
 		except AttributeError:
 			self.prefsWindow = PrefsWindow (self)
+
+	def runningOperations(self, menuItem):
+		RunningOperations ()
 
 	def pause(self, menuItem):
 		hubicAccount.setPauseState (True)

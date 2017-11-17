@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.18.3 -->
+<interface>
+  <requires lib="gtk+" version="3.12"/>
+  <object class="GtkListStore" id="liststore_operations">
+    <columns>
+      <!-- column-name id -->
+      <column type="guint"/>
+      <!-- column-name sourcepath -->
+      <column type="gchararray"/>
+      <!-- column-name destinationpath -->
+      <column type="gchararray"/>
+      <!-- column-name operationtype -->
+      <column type="gchararray"/>
+      <!-- column-name bytesdone -->
+      <column type="glong"/>
+      <!-- column-name totalbytes -->
+      <column type="glong"/>
+      <!-- column-name progression -->
+      <column type="guint"/>
+    </columns>
+  </object>
+  <object class="GtkWindow" id="window_running_operations">
+    <property name="can_focus">False</property>
+    <property name="title" translatable="yes">Opérations en cours</property>
+    <property name="window_position">center</property>
+    <property name="default_width">440</property>
+    <property name="default_height">250</property>
+    <child>
+      <object class="GtkTreeView" id="treeview_operations">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="model">liststore_operations</property>
+        <child internal-child="selection">
+          <object class="GtkTreeSelection" id="treeview-selection1"/>
+        </child>
+        <child>
+          <object class="GtkTreeViewColumn" id="treeviewcolumn2">
+            <property name="title" translatable="yes">Operation</property>
+            <child>
+              <object class="GtkCellRendererText" id="cellrenderertext3"/>
+              <attributes>
+                <attribute name="text">3</attribute>
+              </attributes>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkTreeViewColumn" id="treeviewcolumn1">
+            <property name="title" translatable="yes">Chemin</property>
+            <child>
+              <object class="GtkCellRendererText" id="cellrenderertext1"/>
+              <attributes>
+                <attribute name="text">1</attribute>
+              </attributes>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkTreeViewColumn" id="treeviewcolumn3">
+            <property name="title" translatable="yes">Progression</property>
+            <child>
+              <object class="GtkCellRendererProgress" id="cellrenderertext2"/>
+              <attributes>
+                <attribute name="value">6</attribute>
+              </attributes>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
