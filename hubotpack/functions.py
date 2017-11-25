@@ -13,11 +13,10 @@ def messageBox(parent, text, messageType=gtk.MessageType.WARNING):
   md.destroy()
 
 def convert_size(size):
-  # print ("Debug : {}" .format (size))
   if (size <= 0): return '0 Octets'
 
-  size_name = ("Octets", "KO", "MO", "GO", "TO", "PO", "EO", "ZO", "YO")
+  size_name = ("Octets", "Ko", "Mo", "Go", "To", "Po", "Eo", "Zo", "Yo")
   i = int(math.floor(math.log(size,1024)))
   p = math.pow(1024,i)
   s = round(size/p,2)
-  return '%s %s' % (s,size_name[i])
+  return "{} {}".format(s, size_name[i])
