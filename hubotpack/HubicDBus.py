@@ -61,6 +61,7 @@ class HubicAccount(HubicDBus):
 	def logout (self):
 		self.dbusObj.Logout ()
 
+
 class HubicGeneral(HubicDBus):
 	def __init__(self):
 		HubicDBus.__init__(self, 'com.hubic.general', 'General')

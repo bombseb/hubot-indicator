@@ -3,7 +3,7 @@ import os
 import gi
 from .PrefsWindow import *
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk as gtk
+from gi.repository import Gtk as gtk, GdkPixbuf
 from .vars import *
 from .HubicDBus import *
 from .functions import *
@@ -15,19 +15,23 @@ class AppMenu(gtk.Menu):
 
 		self.indicator = indicator
 
-		self.itemStatus = gtk.MenuItem('Status : Unknown', name='status')
+		self.itemStatus = gtk.MenuItem('Status : Unknown')
 		self.itemStatus.set_sensitive (False)
 		self.append(self.itemStatus)
 
-		item = gtk.MenuItem('Mettre en pause', name='pauseresume')
-		self.pauseResume_handler_ID = item.connect('activate', self.pause)
-		self.append(item)
+		self.append(gtk.SeparatorMenuItem())
 
-		item = gtk.MenuItem('Synchroniser maintenant', name='synchro')
-		item.connect('activate', self.synchro)
-		self.append(item)
+		self.item_pauseResume = gtk.MenuItem('Mettre en pause')
+		self.pauseResume_handler_ID = self.item_pauseResume.connect('activate', self.pause)
+		self.append(self.item_pauseResume)
 
-		item = gtk.MenuItem('Préférences')
+		self.item_synchro = gtk.MenuItem('Synchroniser maintenant')
+		self.item_synchro.connect('activate', self.synchro)
+		self.append(self.item_synchro)
+
+		item = gtk.ImageMenuItem ('Préférences')
+		# item.set_image(gtk.Image.new_from_file(ICON_ERROR))
+		item.set_always_show_image(True)
 		item.connect('activate', self.prefs)
 		self.append(item)
 
@@ -35,7 +39,13 @@ class AppMenu(gtk.Menu):
 		item.connect('activate', self.runningOperations)
 		self.append(item)
 
-		item = gtk.MenuItem('Quit')
+		self.append(gtk.SeparatorMenuItem())
+
+		item = gtk.MenuItem('A propos')
+		item.connect('activate', self.aPropos)
+		self.append(item)
+
+		item = gtk.MenuItem('Quitter')
 		item.connect('activate', self.quit)
 		self.append(item)
 
@@ -58,19 +68,20 @@ class AppMenu(gtk.Menu):
 	def pause(self, menuItem):
 		hubicAccount.setPauseState (True)
 
-		menuItem.set_label ("Enlever la pause")
-		menuItem.disconnect(self.pauseResume_handler_ID)
-		self.pauseResume_handler_ID = menuItem.connect ('activate', self.resume)
-
 	def resume(self, menuItem):
 		hubicAccount.setPauseState (False)
 
-		menuItem.set_label ("Mettre en pause")
-		menuItem.disconnect(self.pauseResume_handler_ID)
-		self.pauseResume_handler_ID = menuItem.connect ('activate', self.pause)
-
 	def synchro(self, menuItem):
 		hubicAccount.synchronizeNow ()
+
+	def aPropos(self, menuItem):
+		builder = gtk.Builder()
+		builder.add_from_file(os.path.join ('gui', 'about.glade'))
+
+		aboutDialog = builder.get_object("aboutdialog")
+		aboutDialog.set_logo (GdkPixbuf.Pixbuf.new_from_file(ICON_OK))
+		aboutDialog.run()
+		aboutDialog.destroy()
 
 	def quit(self, menuItem):
 		gtk.main_quit()
@@ -83,11 +94,22 @@ class AppMenu(gtk.Menu):
 		# Busy: Connected and currently index/synchronize content
 
 		self.itemStatus.set_label ("Status : {}".format (newState))
+		self.item_synchro.set_sensitive(newState != "Paused")
+
+		if oldState != "Paused" and newState != oldState:
+			self.item_pauseResume.set_label ("Mettre en pause")
+			self.item_pauseResume.disconnect(self.pauseResume_handler_ID)
+			self.pauseResume_handler_ID = self.item_pauseResume.connect ('activate', self.pause)
 
 		if newState == "Idle":
 			self.indicator.set_icon (ICON_OK)
 		elif newState == "Paused":
 			self.indicator.set_icon (ICON_OK)
+
+			self.item_pauseResume.set_label ("Enlever la pause")
+			self.item_pauseResume.disconnect(self.pauseResume_handler_ID)
+			self.pauseResume_handler_ID = self.item_pauseResume.connect ('activate', self.resume)
+
 		elif newState == "Busy":
 			self.indicator.set_icon (ICON_BUSY)
 		elif newState in ("Unknown", "NotConnected", "Connecting"):
