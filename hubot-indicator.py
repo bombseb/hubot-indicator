@@ -3,7 +3,7 @@
 import signal
 import os
 import gi
-from hubotpack.vars import *
+from hubotpack.variables import *
 from hubotpack.AppMenu import *
 
 gi.require_version('Gtk', '3.0')

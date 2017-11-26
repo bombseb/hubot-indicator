@@ -4,7 +4,7 @@ import gi
 from .PrefsWindow import *
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk as gtk, GdkPixbuf
-from .vars import *
+from .variables import *
 from .HubicDBus import *
 from .functions import *
 from .RunningOperations import *

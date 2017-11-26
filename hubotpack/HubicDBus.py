@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
-from .vars import *
+from .variables import *
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 

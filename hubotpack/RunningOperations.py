@@ -2,7 +2,7 @@
 import os
 import gi
 import math
-from .vars import *
+from .variables import *
 from .functions import *
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk as gtk, GObject, GdkPixbuf
