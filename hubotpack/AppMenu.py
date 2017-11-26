@@ -100,6 +100,7 @@ class AppMenu(gtk.Menu):
 
 		aboutDialog = builder.get_object("aboutdialog")
 		aboutDialog.set_logo (GdkPixbuf.Pixbuf.new_from_file(ICON_IDLE))
+		aboutDialog.set_version = VERSION
 		aboutDialog.run()
 		aboutDialog.destroy()
 

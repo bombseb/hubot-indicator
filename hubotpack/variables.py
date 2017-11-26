@@ -23,6 +23,8 @@ from .HubicDBus import *
 
 APPINDICATOR_ID = 'hubot-indicator'
 
+VERSION = "0.5"
+
 ICON_IDLE         	= os.path.abspath(os.path.join ('icons','idle.svg'))
 ICON_BUSY       	= os.path.abspath(os.path.join ('icons','busy.svg'))
 ICON_PAUSE      	= os.path.abspath(os.path.join ('icons','pause.svg'))
