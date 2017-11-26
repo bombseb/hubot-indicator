@@ -15,7 +15,7 @@ def main():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     #indicator = appindicator.Indicator.new(APPINDICATOR_ID, 'whatever', appindicator.IndicatorCategory.SYSTEM_SERVICES)
     #indicator = appindicator.Indicator.new(APPINDICATOR_ID, gtk.STOCK_INFO, appindicator.IndicatorCategory.SYSTEM_SERVICES)
-    indicator = appindicator.Indicator.new(APPINDICATOR_ID, ICON_ERROR, appindicator.IndicatorCategory.SYSTEM_SERVICES)	
+    indicator = appindicator.Indicator.new(APPINDICATOR_ID, ICON_NOTCONNECTED, appindicator.IndicatorCategory.SYSTEM_SERVICES)	
     indicator.set_status(appindicator.IndicatorStatus.ACTIVE)
     indicator.set_menu(AppMenu (indicator))
 

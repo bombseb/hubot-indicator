@@ -79,7 +79,7 @@ class AppMenu(gtk.Menu):
 		builder.add_from_file(os.path.join ('gui', 'about.glade'))
 
 		aboutDialog = builder.get_object("aboutdialog")
-		aboutDialog.set_logo (GdkPixbuf.Pixbuf.new_from_file(ICON_OK))
+		aboutDialog.set_logo (GdkPixbuf.Pixbuf.new_from_file(ICON_IDLE))
 		aboutDialog.run()
 		aboutDialog.destroy()
 
@@ -102,9 +102,9 @@ class AppMenu(gtk.Menu):
 			self.pauseResume_handler_ID = self.item_pauseResume.connect ('activate', self.pause)
 
 		if newState == "Idle":
-			self.indicator.set_icon (ICON_OK)
+			self.indicator.set_icon (ICON_IDLE)
 		elif newState == "Paused":
-			self.indicator.set_icon (ICON_OK)
+			self.indicator.set_icon (ICON_PAUSE)
 
 			self.item_pauseResume.set_label ("Enlever la pause")
 			self.item_pauseResume.disconnect(self.pauseResume_handler_ID)
@@ -112,8 +112,8 @@ class AppMenu(gtk.Menu):
 
 		elif newState == "Busy":
 			self.indicator.set_icon (ICON_BUSY)
-		elif newState in ("Unknown", "NotConnected", "Connecting"):
-			self.indicator.set_icon (ICON_ERROR)
+		elif newState in ("NotConnected", "Connecting"):
+			self.indicator.set_icon (ICON_NOTCONNECTED)
 		else:
 			self.indicator.set_icon (ICON_ERROR)
 
