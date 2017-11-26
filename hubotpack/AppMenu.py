@@ -19,13 +19,13 @@
 
 import os
 import gi
-from .PrefsWindow import *
+from hubotpack.PrefsWindow import *
+from hubotpack.variables import *
+from hubotpack.HubicDBus import *
+from hubotpack.functions import *
+from hubotpack.RunningOperations import *
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk as gtk, GdkPixbuf
-from .variables import *
-from .HubicDBus import *
-from .functions import *
-from .RunningOperations import *
 
 class AppMenu(gtk.Menu):
 	def __init__(self, indicator):
@@ -96,7 +96,7 @@ class AppMenu(gtk.Menu):
 
 	def aPropos(self, menuItem):
 		builder = gtk.Builder()
-		builder.add_from_file(os.path.join ('gui', 'about.glade'))
+		builder.add_from_file(os.path.join (APPDIR, 'gui', 'about.glade'))
 
 		aboutDialog = builder.get_object("aboutdialog")
 		aboutDialog.set_logo (GdkPixbuf.Pixbuf.new_from_file(ICON_IDLE))

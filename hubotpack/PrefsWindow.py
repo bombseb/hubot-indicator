@@ -19,19 +19,19 @@
 
 import os
 import gi
-from .SelectDirs import *
-from .LoginWindow import *
-from .Sauvegarde import *
-from .functions import *
+from hubotpack.SelectDirs import *
+from hubotpack.LoginWindow import *
+from hubotpack.Sauvegarde import *
+from hubotpack.functions import *
 # from .BackupInProgressWatcher import *
-from .variables import *
+from hubotpack.variables import *
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk as gtk
 
 class PrefsWindow:
 	def __init__(self, appMenu):
 		builder = gtk.Builder()
-		builder.add_from_file(os.path.join ('gui', 'prefs.glade'))
+		builder.add_from_file(os.path.join (APPDIR, 'gui', 'prefs.glade'))
 
 		self.appMenu = appMenu
 		self.modifiedList = []
@@ -45,7 +45,6 @@ class PrefsWindow:
 
 		self.hubicSettings = HubicSettings ()
 		self.excludeList = hubicAccount.getProperty('ExcludedFolders')
-		self.proxyInfoFile = os.path.join(APPDIR, 'proxy')
 		self.iterCetOrdi 	= self.treestore_sauvegardes.append(None, [True, "Cet ordinateur", "", "", "0", False, False])
 		self.iterAutreOrdi 	= self.treestore_sauvegardes.append(None, [False, "Autres ordinateurs", "", "", "0", False, False])
 		# self.backupWatcher = BackupInProgressWatcher (self.treestore_sauvegardes)

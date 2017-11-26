@@ -19,24 +19,23 @@
 
 import os
 import gi
-from .variables import *
-from .functions import *
+from hubotpack.variables import *
+from hubotpack.functions import *
+from hubotpack.HubicDBus import * 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk as gtk, Gdk as gdk, GObject
-from .HubicDBus import * 
 
 
 class LoginWindow:
 	def __init__(self, afficheInfos):
 		builder = gtk.Builder()
-		builder.add_from_file(os.path.join ('gui', 'login.glade'))  # Rentrez évidemment votre fichier, pas le miens!
+		builder.add_from_file(os.path.join (APPDIR, 'gui', 'login.glade'))  # Rentrez évidemment votre fichier, pas le miens!
 
 		self.afficheInfos = afficheInfos
 		self.window = builder.get_object ('window_login')
 		self.entry_mail = builder.get_object('entry_mail')
 		self.entry_pass = builder.get_object('entry_pass')
 		self.button_connexion = builder.get_object('button_connexion')
-		self.password_path = os.path.join (APPDIR, 'hubicpasswd')
 
 		# Le handler
 		handler = {'on_button_connexion_clicked' : self.on_button_connexion_clicked, 
@@ -79,12 +78,6 @@ class LoginWindow:
 
 	def on_button_annuler_clicked (self, button):
 		self.window.close ()
-
-	def on_window_login_delete_event (self, widget, event):
-		try:
-			os.remove (os.path.join (APPDIR, '.hubicpasswd'))
-		except FileNotFoundError:
-			pass
 
 
 		

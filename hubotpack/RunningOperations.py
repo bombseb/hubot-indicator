@@ -20,15 +20,15 @@
 import os
 import gi
 import math
-from .variables import *
-from .functions import *
+from hubotpack.variables import *
+from hubotpack.functions import *
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk as gtk, GObject, GdkPixbuf
 
 class RunningOperations:
 	def __init__(self):
 		builder = gtk.Builder()
-		builder.add_from_file(os.path.join ('gui', 'runningoperations.glade'))
+		builder.add_from_file(os.path.join (APPDIR, 'gui', 'runningoperations.glade'))
 
 		for o in builder.get_objects():
 			if issubclass(type(o), gtk.Buildable):

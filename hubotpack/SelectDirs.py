@@ -27,7 +27,7 @@ from gi.repository import Gtk as gtk
 class SelectDirs:
 	def __init__(self, parent, rootDir):
 			builder = gtk.Builder()
-			builder.add_from_file(os.path.join ('gui', 'selectDirs.glade'))
+			builder.add_from_file(os.path.join (APPDIR, 'gui', 'selectDirs.glade'))
 
 			self.window = builder.get_object('window_selectDirs')
 			self.treeStore = builder.get_object('treestore_dirs')

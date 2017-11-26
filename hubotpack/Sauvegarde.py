@@ -19,8 +19,8 @@
 
 import os
 import gi
-from .functions import *
-from .variables import *
+from hubotpack.functions import *
+from hubotpack.variables import *
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk as gtk
 
@@ -28,7 +28,7 @@ from gi.repository import Gtk as gtk
 class Sauvegarde:
 	def __init__(self, parent, iterSauvegarde=None):
 		builder = gtk.Builder()
-		builder.add_from_file(os.path.join ('gui', 'sauvegarde.glade'))  # Rentrez évidemment votre fichier, pas le miens!
+		builder.add_from_file(os.path.join (APPDIR, 'gui', 'sauvegarde.glade'))  # Rentrez évidemment votre fichier, pas le miens!
 
 		self.parent 		= parent
 		self.modifiedList 	= []

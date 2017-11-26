@@ -18,8 +18,8 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import os
-from .variables import *
 import dbus
+from hubotpack.variables import *
 from dbus.mainloop.glib import DBusGMainLoop
 
 
