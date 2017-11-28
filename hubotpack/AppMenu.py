@@ -99,7 +99,7 @@ class AppMenu(gtk.Menu):
 		builder.add_from_file(os.path.join (APPDIR, 'gui', 'about.glade'))
 
 		aboutDialog = builder.get_object("aboutdialog")
-		aboutDialog.set_logo (GdkPixbuf.Pixbuf.new_from_file(ICON_IDLE))
+		aboutDialog.set_logo (GdkPixbuf.Pixbuf.new_from_file(ICON_LOGO))
 		aboutDialog.set_version = VERSION
 		aboutDialog.run()
 		aboutDialog.destroy()

@@ -19,7 +19,6 @@
 
 import os
 import dbus
-from hubotpack.variables import *
 from dbus.mainloop.glib import DBusGMainLoop
 
 

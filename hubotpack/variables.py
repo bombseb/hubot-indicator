@@ -34,6 +34,7 @@ ICON_NOTCONNECTED	= os.path.join (APPDIR, 'icons','notconnected.svg')
 ICON_ERROR			= os.path.join (APPDIR, 'icons','error.svg')
 ICON_DOWNLOAD   	= os.path.join (APPDIR, 'icons','download.svg')
 ICON_UPLOAD     	= os.path.join (APPDIR, 'icons','upload.svg')
+ICON_LOGO     	= os.path.join (APPDIR, 'icons','logo.svg')
 
 HOMEDIR = str(Path.home())
 
